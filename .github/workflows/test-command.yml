@@ -38,9 +38,9 @@ jobs:
         run: |
           echo "Hello world!"
 
-      - name: "Fail"
-        run: |
-          exit 1
+      # - name: "Fail"
+      #   run: |
+      #     exit 1
 
       - name: "Wait"
         run: |
