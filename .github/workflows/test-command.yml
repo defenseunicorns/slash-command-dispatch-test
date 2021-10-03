@@ -92,6 +92,7 @@ jobs:
 
       # Add reaction when finished
       - name: "Add reaction"
+        if: "true"
         uses: peter-evans/create-or-update-comment@v1
         with:
           token: ${{ secrets.PAT }}
