@@ -38,6 +38,14 @@ jobs:
         run: |
           echo "Hello world!"
 
+      - name: "Fail"
+        run: |
+          exit 1
+
+      - name: "Wait"
+        run: |
+          sleep 600
+
       # Update GitHub status for dispatch events
       - name: "Update GitHub Status for failure"
         if: ${{ failure() }}
