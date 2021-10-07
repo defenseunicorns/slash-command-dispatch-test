@@ -212,8 +212,9 @@ jobs:
           asdf global golang 1.16.7
           export GOPATH="$HOME/go"
           export PATH="$PATH:$GOPATH/bin"
-          ./build/zarf tools registry login registry1.dso.mil --username "${{ secrets.REGISTRY1_USERNAME_ROTHANDREW2 }}" --password "foo"
-          make build-cli init-package test-e2e
+          make build-cli
+          ./build/zarf tools registry login registry1.dso.mil --username "${{ secrets.REGISTRY1_USERNAME_ROTHANDREW2 }}" --password "${{ secrets.REGISTRY1_PASSWORD_ROTHANDREW2 }}"
+          make init-package test-e2e
 
       # Update GitHub status for failing pipeline run
       - name: "Update GitHub Status for failure"
