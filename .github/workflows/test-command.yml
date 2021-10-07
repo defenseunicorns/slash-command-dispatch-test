@@ -18,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       run-ping: ${{ steps.parse.outputs.ping }}
-      run-hello: ${{ steps.parse.outputs.hello }}
-      run-quote: ${{ steps.parse.outputs.quote }}
       run-e2e: ${{ steps.parse.outputs.e2e }}
     steps:
       - name: Parse Args
@@ -33,7 +31,7 @@ jobs:
           ARGS="${ARGS_V1}${ARGS_V2}"
           printf "Args are %s\n" "$ARGS"
           printf "\n\nslash_command is %s\n\n" "$DEBUG"
-          COMMANDS=(PING HELLO QUOTE E2E)
+          COMMANDS=(PING E2E)
           if printf "%s" "${ARGS^^}" | grep -qE '\bALL\b'; then
             # "all" explicitly does not include "ping"
             for cmd in "${COMMANDS[@]}"; do
@@ -72,94 +70,7 @@ jobs:
           GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
           GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
-  # Do a "hello world" example pipeline run
-  hello:
-    runs-on: ubuntu-latest
-    needs: parse
-    if: needs.parse.outputs.run-hello == 'true'
-    steps:
-      # Update GitHub status for pending pipeline run
-      - name: "Update GitHub Status for pending"
-        uses: docker://cloudposse/github-status-updater
-        with:
-          args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          GITHUB_STATE: pending
-          GITHUB_CONTEXT: "/test hello"
-          GITHUB_DESCRIPTION: "started by @${{ github.event.client_payload.github.actor }}"
-          GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
-          GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
-
-      # Checkout the code from GitHub Pull Request
-      - name: "Checkout the code"
-        uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      # Echo "Hello world!"
-      - name: "Echo something"
-        run: |
-          echo "Hello world!"
-
-      # # Throw a failure to test fail conditions
-      # - name: "Fail"
-      #   run: |
-      #     exit 1
-
-      # # Wait a long time to give the dev time to test cancel conditions
-      # - name: "Wait"
-      #   run: |
-      #     sleep 600
-
-      # Update GitHub status for failing pipeline run
-      - name: "Update GitHub Status for failure"
-        if: ${{ failure() }}
-        uses: docker://cloudposse/github-status-updater
-        with:
-          args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          GITHUB_STATE: failure
-          GITHUB_CONTEXT: "/test hello"
-          GITHUB_DESCRIPTION: "run failed"
-          GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
-          GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
-
-      # Update GitHub status for successful pipeline run
-      - name: "Update GitHub Status for success"
-        uses: docker://cloudposse/github-status-updater
-        with:
-          args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          GITHUB_STATE: success
-          GITHUB_CONTEXT: "/test hello"
-          GITHUB_DESCRIPTION: "run passed"
-          GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
-          GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
-
-      # Update GitHub status for cancelled pipeline run
-      - name: "Update GitHub Status for cancelled"
-        if: ${{ cancelled() }}
-        uses: docker://cloudposse/github-status-updater
-        with:
-          args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          GITHUB_STATE: error
-          GITHUB_CONTEXT: "/test hello"
-          GITHUB_DESCRIPTION: "run cancelled"
-          GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
-          GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
-
-  # Run E2E test
+  # Run E2E tests
   e2e:
     runs-on: ubuntu-latest
     needs: parse
@@ -212,7 +123,7 @@ jobs:
           asdf global golang 1.16.7
           export GOPATH="$HOME/go"
           export PATH="$PATH:$GOPATH/bin"
-          make build-cli
+          make build-cli-linux
           ./build/zarf tools registry login registry1.dso.mil --username "${{ secrets.REGISTRY1_USERNAME_ROTHANDREW2 }}" --password "${{ secrets.REGISTRY1_PASSWORD_ROTHANDREW2 }}"
           make init-package test-e2e
 
@@ -256,26 +167,6 @@ jobs:
           GITHUB_STATE: error
           GITHUB_CONTEXT: "/test e2e"
           GITHUB_DESCRIPTION: "run cancelled"
-          GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
-          GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
-
-  # Add a quote to the status section
-  quote:
-    runs-on: ubuntu-latest
-    needs: parse
-    if: needs.parse.outputs.run-quote == 'true'
-    steps:
-      # Update GitHub status
-      - name: "Update GitHub Status for successful pipeline run"
-        uses: "docker://cloudposse/github-status-updater"
-        with:
-          args: "-action update_state -ref ${{ github.event.client_payload.pull_request.head.sha }} -repo ${{ github.event.client_payload.github.payload.repository.name }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-          GITHUB_STATE: success
-          GITHUB_CONTEXT: "/test quote"
-          GITHUB_DESCRIPTION: "Insanity is doing the same thing over and over and expecting different results."
           GITHUB_TARGET_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
           GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
