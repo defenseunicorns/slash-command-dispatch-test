@@ -197,11 +197,20 @@ jobs:
           ref: feature/add-terratest-e2e-to-pipeline
 
       - name: "Run E2E tests"
+        shell: bash -x -e -o pipefail {0}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEFENSEUNICORNS_COMMERCIAL_SA_ZARF }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEFENSEUNICORNS_COMMERCIAL_SA_ZARF }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
+          git clone --branch v0.8.0 --depth 1 https://github.com/asdf-vm/asdf.git $HOME/.asdf
+          source ~/.asdf/asdf.sh
+          export PATH="$HOME/.asdf/bin:$PATH"
+          asdf plugin-add golang https://github.com/kennyp/asdf-golang.git
+          asdf install golang 1.16.7
+          asdf global golang 1.16.7
+          export GOPATH="$HOME/go"
+          export PATH="$PATH:$GOPATH/bin"
           make build-cli init-package test-e2e
 
       # Update GitHub status for failing pipeline run
