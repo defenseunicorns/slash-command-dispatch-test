@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       run-ping: ${{ steps.parse.outputs.ping }}
-      run-build: ${{ steps.parse.outputs.ping }}
+      run-build: ${{ steps.parse.outputs.build }}
       run-e2e: ${{ steps.parse.outputs.e2e }}
     steps:
       - name: Parse Args
