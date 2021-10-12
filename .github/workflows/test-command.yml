@@ -225,6 +225,12 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEFENSEUNICORNS_COMMERCIAL_SA_ZARF }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
+          pwd
+          ls -la
+          cd build
+          pwd
+          ls -la
+          exit 1
           # cloudposse/test-harness has golang 1.15, we need 1.16. This is the easiest way I know to do it. This should definitely be revisited and cleaned up.
           git clone --branch v0.8.0 --depth 1 https://github.com/asdf-vm/asdf.git $HOME/.asdf
           source ~/.asdf/asdf.sh
