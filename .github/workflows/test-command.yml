@@ -196,6 +196,22 @@ jobs:
           GITHUB_REF: ${{ github.event.client_payload.pull_request.head.ref }}
           GITHUB_OWNER: ${{ github.event.client_payload.github.payload.repository.owner.login }}
 
+#      # Checkout the code from GitHub Pull Request
+#      - name: "Checkout the code"
+#        uses: actions/checkout@v2
+#        with:
+#          token: ${{ secrets.PAT }}
+#          repository: ${{ github.event.client_payload.pull_request.head.repo.full_name }}
+#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      # Checkout the code from GitHub Pull Request
+      - name: "Checkout the code"
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: defenseunicorns/zarf
+          ref: master
+
       # Download the built artifacts
       - name: "Download the built artifacts"
         uses: actions/download-artifact@v2
